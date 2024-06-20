@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"
+            integrity="sha512-JyCZjCOZoyeQZSd5+YEAcFgz2fowJ1F1hyJOXgtKu4llIa0KneLcidn5bwfutiehUTiOuK87A986BZJMko0eWQ=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css"
+          integrity="sha512-UtLOu9C7NuThQhuXXrGwx9Jb/z9zPQJctuAgNUBK3Z6kkSYT9wJ+2+dh6klS+TDBCV9kNPBbAxbVD+vCcfGPaA=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"/>
+
+    <style>
+        img {
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container mx-auto max-w-7xl pt-24 mb-24">
+    <h1 class="text-4xl mb-24">Multi cropper</h1>
+
+    <div class="flex flex-col gap-4 mb-12">
+        <input type="text" id="filename" placeholder="Image filename" class="border border-solid border-gray-300 px-3 py-1 max-w-56" />
+        <input type="text" id="alt" placeholder="Image alt" class="border border-solid border-gray-300 px-3 py-1 max-w-56" />
+    </div>
+
+    <div class="border-2 border-solid p-6 mb-6">
+        <h3 class="text-lg mb-4">Desktop</h3>
+        <div class="mb-4">
+            <img src="picture.jpg" alt="Picture" class="image" data-number="1" data-size="1">
+        </div>
+
+        <div class="mb-12">
+            <button data-box="1" class="scale-up border-2 border-solid border-red-500 px-6 py-2 hover:bg-red-500 hover:border-red-600 hover:text-white transition ease-in-out duration-300">
+                Zoom in
+            </button>
+
+            <button data-box="1" class="scale-down border-2 border-solid border-red-500 px-6 py-2 hover:bg-red-500 hover:border-red-600 hover:text-white transition ease-in-out duration-300">
+                Zoom out
+            </button>
+        </div>
+
+        <h3 class="text-lg mb-4">Tablet</h3>
+        <div class="mb-4">
+            <img src="picture.jpg" alt="Picture" class="image" data-number="2" data-size="1">
+        </div>
+
+        <div class="mb-12">
+            <button data-box="2" class="scale-up border-2 border-solid border-red-500 px-6 py-2 hover:bg-red-500 hover:border-red-600 hover:text-white transition ease-in-out duration-300">
+                Zoom in
+            </button>
+
+            <button data-box="2" class="scale-down border-2 border-solid border-red-500 px-6 py-2 hover:bg-red-500 hover:border-red-600 hover:text-white transition ease-in-out duration-300">
+                Zoom out
+            </button>
+        </div>
+
+        <h3 class="text-lg mb-4">Mobile</h3>
+        <div class="mb-4">
+            <img src="picture.jpg" alt="Picture" class="image" data-number="3" data-size="1">
+        </div>
+
+        <div class="mb-12">
+            <button data-box="3" class="scale-up border-2 border-solid border-red-500 px-6 py-2 hover:bg-red-500 hover:border-red-600 hover:text-white transition ease-in-out duration-300">
+                Zoom in
+            </button>
+
+            <button data-box="3" class="scale-down border-2 border-solid border-red-500 px-6 py-2 hover:bg-red-500 hover:border-red-600 hover:text-white transition ease-in-out duration-300">
+                Zoom out
+            </button>
+        </div>
+    </div>
+
+    <div class="mb-24">
+        <button id="button" class="border-2 border-solid border-sky-500 px-6 py-2 hover:bg-sky-500 hover:border-sky-600 hover:text-white transition ease-in-out duration-300">
+            Crop
+        </button>
+    </div>
+
+    <div class="sample1 mb-4"></div>
+    <div class="sample2 mb-4"></div>
+    <div class="sample3 mb-12"></div>
+
+    <div>
+        <h3 class="text-lg mb-4">HTML code example</h3>
+        <pre>
+<code id="code"></code>
+        </pre>
+    </div>
+</div>
+
+<script>
+    window.addEventListener('DOMContentLoaded', function () {
+        let images = document.querySelectorAll('.image');
+        let length = images.length;
+        let croppers = [];
+        let i;
+
+        let button = document.getElementById('button');
+
+        let scaleUp = document.querySelectorAll('.scale-up');
+        let scaleDown = document.querySelectorAll('.scale-down');
+
+        const sizes = [
+            ["1920", "476"],
+            ["810", "540"],
+            ["428", "463"],
+        ];
+
+        for (i = 0; i < length; i++) {
+            const minCroppedWidth = sizes[i][0];
+            const minCroppedHeight = sizes[i][1];
+            const maxCroppedWidth = sizes[i][0];
+            const maxCroppedHeight = sizes[i][1];
+
+            const cropper = new Cropper(images[i], {
+                dragMode: 'move',
+                zoomable: false,
+                autoCropArea: 1,
+                guides: true,
+                cropBoxResizable: false,
+                toggleDragModeOnDblclick: false,
+                crop(event) {
+                    let width = Math.round(event.detail.width);
+                    let height = Math.round(event.detail.height);
+
+                    if (
+                        width < minCroppedWidth
+                        || height < minCroppedHeight
+                        || width > maxCroppedWidth
+                        || height > maxCroppedHeight
+                    ) {
+                        cropper.setData({
+                            width: Math.max(minCroppedWidth, Math.min(maxCroppedWidth, width)),
+                            height: Math.max(minCroppedHeight, Math.min(maxCroppedHeight, height)),
+                        });
+                    }
+                },
+            });
+
+            croppers.push(cropper);
+        }
+
+        scaleUp.forEach((increment, index) => {
+            increment.addEventListener('click', (event) => {
+                const currentNumber = document.querySelector('[data-number="'+event.target.dataset.box+'"]');
+
+                if (parseFloat(currentNumber.dataset.size) >= 2.0 ) {
+                    return
+                }
+
+                croppers[event.target.dataset.box - 1].scale(parseFloat(currentNumber.dataset.size) + 0.1)
+                currentNumber.dataset.size = parseFloat(currentNumber.dataset.size) + 0.1
+            })
+        })
+
+        scaleDown.forEach((decrement, index) => {
+            decrement.addEventListener('click', (event) => {
+                const currentNumber = document.querySelector('[data-number="'+event.target.dataset.box+'"]');
+
+                if (parseFloat(currentNumber.dataset.size) <= 0.5 ) {
+                    return
+                }
+
+                croppers[event.target.dataset.box - 1].scale(parseFloat(currentNumber.dataset.size) - 0.1)
+                currentNumber.dataset.size = parseFloat(currentNumber.dataset.size) - 0.1
+            })
+        })
+
+        button.onclick = function () {
+            const filename = document.getElementById("filename").value
+            const alt = document.getElementById("alt").value
+            const code = document.getElementById("code")
+
+            code.innerHTML = `&lt;picture&gt;
+  &lt;source media="(min-width: 1500px)" srcset="${filename}_1500.jpg" /&gt;
+  &lt;source media="(min-width: 1280px)" srcset="${filename}_1280.jpg" /&gt;
+  &lt;img src="${filename}_960.jpg" alt="${alt}" /&gt;
+&lt;/picture&gt;`
+
+            croppers.forEach((cropper, index) => {
+                const box = document.getElementsByClassName('sample' + (index + 1))[0]
+                box.textContent = '';
+                box.appendChild(cropper.getCroppedCanvas())
+            })
+        };
+    });
+</script>
+
+</body>
+</html>
