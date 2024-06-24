@@ -16,16 +16,22 @@
         img {
             max-width: 100%;
         }
+
+        #desktop canvas,
+        #tablet canvas,
+        #mobile canvas {
+            max-width: 100%;
+        }
     </style>
 </head>
 <body>
 
 <div class="container mx-auto max-w-7xl pt-24 mb-24">
-    <h1 class="text-4xl mb-24">Multi cropper</h1>
+    <h1 class="text-5xl font-bold mb-24">Multi Cropper voor categorie: <span id="format"></span></h1>
 
     <div class="flex flex-col gap-4 mb-12">
-        <input type="text" id="filename" placeholder="Image filename" class="border border-solid border-gray-300 px-3 py-1 max-w-56" />
-        <input type="text" id="alt" placeholder="Image alt" class="border border-solid border-gray-300 px-3 py-1 max-w-56" />
+        <input type="text" id="filename" placeholder="Image filename *" class="border border-solid border-gray-300 px-3 py-1 max-w-56" />
+        <input type="text" id="alt" placeholder="Image alt *" class="border border-solid border-gray-300 px-3 py-1 max-w-56" />
     </div>
 
     <div class="border-2 border-solid p-6 mb-6">
@@ -81,41 +87,71 @@
         </button>
     </div>
 
-    <div class="sample1 mb-4"></div>
-    <div class="sample2 mb-4"></div>
-    <div class="sample3 mb-12"></div>
+    <div class="mb-4 border-2 border-solid border-gray-500 w-full p-6 relative">
+        <div class="absolute left-4 -top-4 px-1 bg-white">Desktop preview</div>
+        <div class="preview1" id="desktop"></div>
+    </div>
 
-    <div>
-        <h3 class="text-lg mb-4">HTML code example</h3>
+    <div class="mb-4 border-2 border-solid border-gray-500 w-full p-6 relative">
+        <div class="absolute left-4 -top-4 px-1 bg-white">Tablet preview</div>
+        <div class="preview2" id="tablet"></div>
+    </div>
+
+    <div class="mb-4 border-2 border-solid border-gray-500 w-full p-6 relative">
+        <div class="absolute left-4 -top-4 px-1 bg-white">Mobile preview</div>
+        <div class="preview3" id="mobile"></div>
+    </div>
+
+    <div class="mb-4 border-2 border-solid border-blue-500 w-full p-6 relative">
+        <div class="absolute left-4 -top-4 px-1 bg-white text-blue-500">HTML code example</div>
         <pre>
 <code id="code"></code>
         </pre>
     </div>
 </div>
 
-<script>
+<script type="module">
     window.addEventListener('DOMContentLoaded', function () {
+        const dimensions = {
+            "banner" : [
+                ["1920", "476"],
+                ["810", "540"],
+                ["428", "462"]
+            ],
+            "oplossingen" : [
+                ["430", "330"],
+                ["770", "430"],
+                ["388", "330"]
+            ],
+            "categorieen" : [
+                ["298", "430"],
+                ["390", "522"],
+                ["298", "400"]
+            ]
+        }
+
+        // Get the dimensions
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const format = urlParams.get('format')
+
+        const formatHolder = document.getElementById("format");
+        formatHolder.innerText = format;
+
         let images = document.querySelectorAll('.image');
         let length = images.length;
         let croppers = [];
         let i;
 
         let button = document.getElementById('button');
-
         let scaleUp = document.querySelectorAll('.scale-up');
         let scaleDown = document.querySelectorAll('.scale-down');
 
-        const sizes = [
-            ["1920", "476"],
-            ["810", "540"],
-            ["428", "463"],
-        ];
-
         for (i = 0; i < length; i++) {
-            const minCroppedWidth = sizes[i][0];
-            const minCroppedHeight = sizes[i][1];
-            const maxCroppedWidth = sizes[i][0];
-            const maxCroppedHeight = sizes[i][1];
+            const minCroppedWidth = dimensions[format][i][0];
+            const minCroppedHeight = dimensions[format][i][1];
+            const maxCroppedWidth = dimensions[format][i][0];
+            const maxCroppedHeight = dimensions[format][i][1];
 
             const cropper = new Cropper(images[i], {
                 dragMode: 'move',
@@ -176,17 +212,43 @@
             const alt = document.getElementById("alt").value
             const code = document.getElementById("code")
 
+            if (filename === "" || alt === "") {
+                return
+            }
+
             code.innerHTML = `&lt;picture&gt;
-  &lt;source media="(min-width: 1500px)" srcset="${filename}_1500.jpg" /&gt;
-  &lt;source media="(min-width: 1280px)" srcset="${filename}_1280.jpg" /&gt;
-  &lt;img src="${filename}_960.jpg" alt="${alt}" /&gt;
+  &lt;source media="(min-width: 1500px)" srcset="${filename}-3x.png" /&gt;
+  &lt;source media="(min-width: 1280px)" srcset="${filename}-2x.png" /&gt;
+  &lt;img src="${filename}-1x.png" alt="${alt}" /&gt;
 &lt;/picture&gt;`
 
             croppers.forEach((cropper, index) => {
-                const box = document.getElementsByClassName('sample' + (index + 1))[0]
+                const box = document.getElementsByClassName('preview' + (index + 1))[0]
                 box.textContent = '';
                 box.appendChild(cropper.getCroppedCanvas())
             })
+
+            const download = function(){
+                // Desktop download
+                let link = document.createElement('a');
+                link.download = filename + '-3x.png';
+                link.href = document.getElementById('desktop').firstChild.toDataURL()
+                link.click();
+
+                // Tablet download
+                link = document.createElement('a');
+                link.download = filename + '-2x.png';
+                link.href = document.getElementById('tablet').firstChild.toDataURL()
+                link.click();
+
+                // Mobile download
+                link = document.createElement('a');
+                link.download = filename + '-1x.png';
+                link.href = document.getElementById('mobile').firstChild.toDataURL()
+                link.click();
+            }
+
+            download();
         };
     });
 </script>
